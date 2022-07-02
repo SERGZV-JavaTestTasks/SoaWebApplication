@@ -1,4 +1,4 @@
-package ru.app.web.sao;
+package ru.app.web.soa;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,4 +1,4 @@
-package ru.app.web.sao.controllers;
+package ru.app.web.soa.controllers;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

@@ -8,10 +8,10 @@
 		<version>2.6.9</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>ru.app.web.sao</groupId>
-	<artifactId>SaoWebApplication</artifactId>
+	<groupId>ru.app.web.soa</groupId>
+	<artifactId>SoaWebApplication</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>SaoWebApp</name>
+	<name>SoaWebApp</name>
 	<description>Test task for creating an application on a service-oriented architecture</description>
 	<properties>
 		<java.version>11</java.version>
