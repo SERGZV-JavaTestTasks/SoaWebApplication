@@ -18,14 +18,13 @@ public class UserService implements UserDetailsService
     @PersistenceContext
     private EntityManager em;
     private final UserRepository userRepository;
-
-//    @Autowired
-//    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository)
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder)
     {
         this.userRepository = userRepository;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @Override

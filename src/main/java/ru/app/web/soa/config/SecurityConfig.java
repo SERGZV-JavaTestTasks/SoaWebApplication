@@ -18,9 +18,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     UserService userService;
 
     @Autowired
-    public SecurityConfig(UserService userService)
+    protected void configureGlobal(UserService userService, AuthenticationManagerBuilder auth) throws Exception
     {
         this.userService = userService;
+        auth.userDetailsService(userService).passwordEncoder(bCryptPasswordEncoder());
     }
 
     @Override
@@ -29,12 +30,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         http.csrf().disable()
             .authorizeRequests()
             .antMatchers("/**").permitAll();
-    }
-
-    @Override
-    public void configure(AuthenticationManagerBuilder auth) throws Exception
-    {
-        auth.userDetailsService(userService).passwordEncoder(bCryptPasswordEncoder());
     }
 
     @Bean
