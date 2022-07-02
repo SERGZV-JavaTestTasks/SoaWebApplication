@@ -17,22 +17,23 @@ public class UserService implements UserDetailsService
 {
     @PersistenceContext
     private EntityManager em;
-    private final UserRepository userRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+//    private final UserRepository userRepository;
+//    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    @Autowired
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder)
-    {
-        this.userRepository = userRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-    }
+//    @Autowired
+//    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder)
+//    {
+//        this.userRepository = userRepository;
+//        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+//    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException
     {
-        User user = userRepository.findByUsername(username);
-        if(user == null) throw new UsernameNotFoundException("User not found");
-
-        return user;
+//        User user = userRepository.findByUsername(username);
+//        if(user == null) throw new UsernameNotFoundException("User not found");
+//
+//        return user;
+        return null;
     }
 }
