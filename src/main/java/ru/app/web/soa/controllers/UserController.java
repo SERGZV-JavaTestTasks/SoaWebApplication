@@ -3,6 +3,7 @@ package ru.app.web.soa.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.app.web.soa.entities.RegistrationResults;
+import ru.app.web.soa.entities.StringObj;
 import ru.app.web.soa.entities.User;
 import ru.app.web.soa.services.UserService;
 import ru.app.web.soa.services.ValidationService;
@@ -19,6 +20,25 @@ public class UserController
     {
         this.userService = userService;
         this.validationService = validationService;
+    }
+
+//    @GetMapping
+//    @PreAuthorize("hasRole('ROLE_USER')")
+//    public String roleRestrictionTest()
+//    {
+//        return "true";
+//    }
+
+    @GetMapping("/exist")
+    public String suchUserExist(@RequestBody StringObj username)
+    {
+        String message;
+        var validationResult = validationService.isUsernameExist(username.getString());
+
+        if(!validationResult.getPassed()) message = validationResult.getError();
+        else message = "Имя пользователя свободно";
+
+        return message;
     }
 
     @PostMapping("/create")
