@@ -6,11 +6,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import ru.app.web.soa.entities.Role;
 import ru.app.web.soa.entities.User;
+import ru.app.web.soa.enums.RoleType;
 import ru.app.web.soa.repositories.UserRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.Collections;
 
 @Service
 public class UserService implements UserDetailsService
@@ -25,6 +28,13 @@ public class UserService implements UserDetailsService
     {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    }
+
+    public void saveUser(User user)
+    {
+        user.setRoles(Collections.singleton(new Role(2L, RoleType.USER.get())));
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        userRepository.save(user);
     }
 
     @Override
