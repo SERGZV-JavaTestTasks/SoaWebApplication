@@ -5,12 +5,18 @@ import java.util.List;
 
 public class RegistrationResults
 {
-    private boolean result;
+    private boolean successful;
     private List<String> errors;
 
     public RegistrationResults()
     {
-        result = false;
+        successful = false;
         errors = new ArrayList<>();
     }
+
+    public boolean getSuccessful() { return successful; }
+    public void setSuccessful(boolean successful) { this.successful = successful; }
+    public void addError(String error) { errors.add(error); }
+    public List<String> getErrors() { return errors; }
+    public void addErrors(List<String> errors) { this.errors.addAll(errors); }
 }

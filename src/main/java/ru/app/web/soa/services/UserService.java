@@ -11,15 +11,11 @@ import ru.app.web.soa.entities.User;
 import ru.app.web.soa.enums.RoleType;
 import ru.app.web.soa.repositories.UserRepository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.Collections;
 
 @Service
 public class UserService implements UserDetailsService
 {
-    @PersistenceContext
-    private EntityManager em;
     private final UserRepository userRepository;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
