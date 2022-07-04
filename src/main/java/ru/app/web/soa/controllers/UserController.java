@@ -9,7 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.web.bind.annotation.*;
 import ru.app.web.soa.entities.auxillary.RegistrationResults;
-import ru.app.web.soa.entities.auxillary.StringObj;
+import ru.app.web.soa.simpletypecontainers.StringContainer;
 import ru.app.web.soa.entities.User;
 import ru.app.web.soa.entities.auxillary.UserSession;
 import ru.app.web.soa.enums.Error;
@@ -69,11 +69,11 @@ public class UserController
     }
 
     @GetMapping("/exist")
-    public String suchUserExist(@RequestBody StringObj username)
+    public String suchUserExist(@RequestBody StringContainer username)
     {
         String message;
 
-        boolean exist = userService.isUserExist(username.getString());
+        boolean exist = userService.isUserExist(username.getField());
         if(!exist) message = Error.getError(Error.USER_DONT_EXIST);
         else message = "Имя пользователя свободно";
 

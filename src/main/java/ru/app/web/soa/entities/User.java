@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Entity
@@ -28,9 +29,26 @@ public class User implements UserDetails
     public void setPassword(String password) { this.password = password; }
     public List<Pet> getPets() { return pets; }
     public void setPets(List<Pet> userPet) { this.pets = userPet; }
-    public void addPet(Pet pet) { pets.add(pet); }
     public Set<Role> getRoles() { return roles; }
     public void setRoles(Set<Role> roles) { this.roles = roles; }
+
+    public void addPet(Pet pet) { pets.add(pet); }
+    public boolean tryDeletePetById(Long petId) { return pets.removeIf(pet -> pet.getId().equals(petId)); }
+
+    public boolean tryEditPet(Pet editedPet)
+    {
+        for (var pet : pets)
+        {
+            if(pet.getId().equals(editedPet.getId()))
+            {
+                pet.editPet(editedPet);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() { return getRoles(); }

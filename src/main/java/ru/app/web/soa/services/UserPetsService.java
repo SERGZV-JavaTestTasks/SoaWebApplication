@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.app.web.soa.entities.Pet;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserPetsService
@@ -14,21 +15,29 @@ public class UserPetsService
     @Autowired
     public UserPetsService(UserService userService) { this.userService = userService; }
 
-    public void addNewPet(Pet pet)
+    public void addNewPet(Pet newPet)
     {
         var user = userService.getCurrentUser();
-        user.addPet(pet);
+        user.addPet(newPet);
         userService.saveUser(user);
     }
 
-    public void editPet()
+    public boolean tryEditPet(Pet editedPet)
     {
+        var user = userService.getCurrentUser();
+        var editingResult = user.tryEditPet(editedPet);
 
+        if(editingResult) userService.saveUser(user);
+        return editingResult;
     }
 
-    public void deletePet()
+    public boolean tryDeletePet(Long petId)
     {
+        var user = userService.getCurrentUser();
+        var deletingResult = user.tryDeletePetById(petId);
 
+        if(deletingResult) userService.saveUser(user);
+        return deletingResult;
     }
 
     public List<Pet> getAllPets()
@@ -36,8 +45,9 @@ public class UserPetsService
         return userService.getCurrentUser().getPets();
     }
 
-    public Pet getPet()
+    public Optional<Pet> getPet(Long petId)
     {
-        return new Pet();
+        var currentUserPets = userService.getCurrentUser().getPets();
+        return currentUserPets.stream().filter(pet -> pet.getId().equals(petId)).findFirst();
     }
 }

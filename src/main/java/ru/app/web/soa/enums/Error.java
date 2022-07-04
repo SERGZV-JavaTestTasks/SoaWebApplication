@@ -12,7 +12,8 @@ public enum Error
     INVALID_PASSWORD,
     INVALID_USERNAME_LENGTH,
     INVALID_PASSWORD_LENGTH,
-    EXCEEDED_LOGIN_ATTEMPTS;
+    EXCEEDED_LOGIN_ATTEMPTS,
+    NO_SUCH_PET;
 
     public static String getError(Error error)
     {
@@ -25,6 +26,7 @@ public enum Error
         map.put(INVALID_PASSWORD_LENGTH.name(), errorText + HttpStatus.BAD_REQUEST + " длинна имени пользователя должна быть между 4 и 40 символами");
         map.put(INVALID_PASSWORD_LENGTH.name(), errorText + HttpStatus.BAD_REQUEST + " длинна пароля должна быть не меньше 6 символов");
         map.put(EXCEEDED_LOGIN_ATTEMPTS.name(), errorText + HttpStatus.CONFLICT + " превышенно количество попыток входа, попробуйте позже");
+        map.put(NO_SUCH_PET.name(), errorText + HttpStatus.BAD_REQUEST + " такого питомца не найдено");
 
         return map.get(error.name());
     }
