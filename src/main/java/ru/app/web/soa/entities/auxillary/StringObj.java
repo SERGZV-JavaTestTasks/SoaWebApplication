@@ -1,4 +1,4 @@
-package ru.app.web.soa.entities;
+package ru.app.web.soa.entities.auxillary;
 
 public class StringObj
 {

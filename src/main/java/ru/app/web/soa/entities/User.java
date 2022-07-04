@@ -17,8 +17,8 @@ public class User implements UserDetails
     private Long id;
     private String username;
     private String password;
-    @OneToMany(fetch = FetchType.LAZY)
-    private List<Pet> pet;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Pet> pets;
     @ManyToMany(fetch = FetchType.EAGER)
     private Set<Role> roles;
 
@@ -26,8 +26,9 @@ public class User implements UserDetails
     public void setUsername(String username) { this.username = username; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
-    public List<Pet> getPet() { return pet; }
-    public void setPet(List<Pet> userPet) { this.pet = userPet; }
+    public List<Pet> getPets() { return pets; }
+    public void setPets(List<Pet> userPet) { this.pets = userPet; }
+    public void addPet(Pet pet) { pets.add(pet); }
     public Set<Role> getRoles() { return roles; }
     public void setRoles(Set<Role> roles) { this.roles = roles; }
 

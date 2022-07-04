@@ -1,4 +1,4 @@
-package ru.app.web.soa.entities;
+package ru.app.web.soa.entities.auxillary;
 
 import java.util.ArrayList;
 import java.util.List;

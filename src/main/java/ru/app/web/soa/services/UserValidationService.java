@@ -5,37 +5,27 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.app.web.soa.entities.User;
-import ru.app.web.soa.entities.ValidationResult;
+import ru.app.web.soa.entities.auxillary.UserSession;
+import ru.app.web.soa.entities.auxillary.ValidationResult;
 import ru.app.web.soa.enums.Error;
-import ru.app.web.soa.repositories.UserRepository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class UserValidationService
 {
-    @PersistenceContext
-    private EntityManager em;
-    private final UserRepository userRepository;
     private final UserService userService;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
-
-    String errorText = "Ошибка ";
-
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
     public UserValidationService
     (
-        UserRepository userRepository,
         UserService userService,
         BCryptPasswordEncoder bCryptPasswordEncoder
     )
     {
-        this.userRepository = userRepository;
         this.userService = userService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
@@ -44,7 +34,7 @@ public class UserValidationService
     {
         var errors = new ArrayList<String>();
 
-        if(isUserExist(newUser.getUsername())) errors.add(Error.getError(Error.USERALREADYEXIST));
+        if(userService.isUserExist(newUser.getUsername())) errors.add(Error.getError(Error.USER_ALREADY_EXIST));
 
         var valUsernameResult = validateUsername(newUser.getUsername());
         if(!valUsernameResult.getPassed()) errors.add(valUsernameResult.getError());
@@ -55,9 +45,16 @@ public class UserValidationService
         return errors;
     }
 
-    public ValidationResult loginIsPossible(User enteringUser)
+    public ValidationResult loginIsPossible(User enteringUser, HttpSession session)
     {
         ValidationResult validationResult = new ValidationResult();
+
+        var attemptsExceeded = UserSession.numLoginAttemptsExceeded(session);
+        if(attemptsExceeded)
+        {
+            validationResult.setError(Error.getError(Error.EXCEEDED_LOGIN_ATTEMPTS));
+            return validationResult;
+        }
 
         User user;
         try
@@ -66,17 +63,13 @@ public class UserValidationService
         }
         catch (UsernameNotFoundException ex)
         {
-            validationResult.setPassed(false);
-            validationResult.setError(Error.getError(Error.USERDONTEXIST));
-
+            validationResult.setError(Error.getError(Error.USER_DONT_EXIST));
             return validationResult;
         }
 
         if(!passIsCorrect(enteringUser, user))
         {
-            validationResult.setPassed(false);
-            validationResult.setError(Error.getError(Error.INVALIDPASSWORD));
-
+            validationResult.setError(Error.getError(Error.INVALID_PASSWORD));
             return validationResult;
         }
 
@@ -84,24 +77,9 @@ public class UserValidationService
         return validationResult;
     }
 
-    public boolean isUserExist(String username)
-    {
-        ValidationResult validationResult = new ValidationResult();
-        String SQL = "SELECT * FROM t_user WHERE username = ?";
-
-        Query query = em.createNativeQuery(SQL, User.class);
-        query.setParameter(1, username);
-
-        @SuppressWarnings("unchecked")
-        List<User> users = query.getResultList();
-
-        return users.size() > 0;
-    }
-
     private boolean passIsCorrect(User checkedUser, User originUser)
     {
-        var encryptedCUPass = bCryptPasswordEncoder.encode(checkedUser.getPassword());
-        return encryptedCUPass.equals(originUser.getPassword());
+        return bCryptPasswordEncoder.matches(checkedUser.getPassword(), originUser.getPassword());
     }
 
     private ValidationResult validateUsername(String username)
@@ -111,7 +89,7 @@ public class UserValidationService
         if(username.length() < 4 || username.length() > 40)
         {
             validationResult.setPassed(false);
-            validationResult.setError(Error.getError(Error.INVALIDUSERNAMELENGTH));
+            validationResult.setError(Error.getError(Error.INVALID_USERNAME_LENGTH));
         }
         else validationResult.setPassed(true);
 
@@ -125,7 +103,7 @@ public class UserValidationService
         if(password.length() < 6)
         {
             validationResult.setPassed(false);
-            validationResult.setError(Error.getError(Error.INVALIDPASSWORDLENGTH));
+            validationResult.setError(Error.getError(Error.INVALID_PASSWORD_LENGTH));
         }
         else validationResult.setPassed(true);
 

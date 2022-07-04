@@ -15,4 +15,14 @@ public class Pet
     private PetType petType;
     private Long birthDate;
     private Sex sex;
+    private String nickname;
+
+    public PetType getPetType() { return petType; }
+    public void setPetType(PetType petType) { this.petType = petType; }
+    public Long getBirthDate() { return birthDate; }
+    public void setBirthDate(Long birthDate) { this.birthDate = birthDate; }
+    public Sex getSex() { return sex; }
+    public void setSex(Sex sex) { this.sex = sex; }
+    public String getNickname() { return nickname; }
+    public void setNickname(String nickname) { this.nickname = nickname; }
 }
