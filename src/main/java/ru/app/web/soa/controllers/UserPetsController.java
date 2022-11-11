@@ -58,11 +58,11 @@ public class UserPetsController
 
     @GetMapping("/get-one")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public Object getPetInfo(@RequestBody LongContainer petId)
+    public CustomResponse<Pet> getPetInfo(@RequestBody LongContainer petId)
     {
         var pet = userPetsService.getPet(petId.getField());
 
-        if(pet.isPresent()) return new CustomResponse<>(Collections.singleton(pet), CustomStatus.OK);
+        if(pet.isPresent()) return new CustomResponse<>(Collections.singleton(pet.get()), CustomStatus.OK);
         else return new CustomResponse<>(null, CustomStatus.BAD_REQUEST, Message.NO_SUCH_PET);
     }
 }

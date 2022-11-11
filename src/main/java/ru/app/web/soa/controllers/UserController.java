@@ -1,13 +1,7 @@
 package ru.app.web.soa.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.web.bind.annotation.*;
-import ru.app.web.soa.util.RegistrationResults;
 import ru.app.web.soa.simpletypecontainers.StringContainer;
 import ru.app.web.soa.entities.User;
 import ru.app.web.soa.util.UserSession;
