@@ -1,7 +1,7 @@
 package ru.app.web.soa.entities;
 
-import ru.app.web.soa.enums.PetType;
-import ru.app.web.soa.enums.Sex;
+import ru.app.web.soa.util.enums.PetType;
+import ru.app.web.soa.util.enums.Sex;
 
 import javax.persistence.*;
 import java.util.Calendar;

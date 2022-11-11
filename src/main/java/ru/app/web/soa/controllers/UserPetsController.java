@@ -4,11 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.app.web.soa.entities.Pet;
-import ru.app.web.soa.enums.Error;
+import ru.app.web.soa.util.CustomResponse;
+import ru.app.web.soa.util.enums.CustomStatus;
 import ru.app.web.soa.simpletypecontainers.LongContainer;
 import ru.app.web.soa.services.UserPetsService;
+import ru.app.web.soa.util.enums.Message;
 
-import java.util.List;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/user-pet")
@@ -21,33 +23,37 @@ public class UserPetsController
 
     @PostMapping("/add")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public String addNewPet(@RequestBody Pet newPet)
+    public CustomResponse<String> addNewPet(@RequestBody Pet newPet)
     {
         userPetsService.addNewPet(newPet);
-        return "Питомец успешно добавлен";
+        return new CustomResponse<>(null, CustomStatus.OK, Message.PET_ADDED);
     }
 
     @PatchMapping("/edit")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public String editPet(@RequestBody Pet editedPet)
+    public CustomResponse<String> editPet(@RequestBody Pet editedPet)
     {
-        if(userPetsService.tryEditPet(editedPet)) return "Питомец успешно отредактирован";
-        return Error.getError(Error.NO_SUCH_PET);
+        if (userPetsService.tryEditPet(editedPet))
+            return new CustomResponse<>(null, CustomStatus.OK, Message.PET_EDITED);
+
+        return new CustomResponse<>(null, CustomStatus.BAD_REQUEST, Message.NO_SUCH_PET);
     }
 
     @DeleteMapping("/delete")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public String deletePet(@RequestBody LongContainer petId)
+    public CustomResponse<String> deletePet(@RequestBody LongContainer petId)
     {
-        if(userPetsService.tryDeletePet(petId.getField())) return "Питомец успешно удалён";
-        return Error.getError(Error.NO_SUCH_PET);
+        if(userPetsService.tryDeletePet(petId.getField()))
+            return new CustomResponse<>(null, CustomStatus.OK, Message.PET_DELETED);
+
+        return new CustomResponse<>(null, CustomStatus.BAD_REQUEST, Message.NO_SUCH_PET);
     }
 
     @GetMapping("/get-all")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public List<Pet> getAllPets()
+    public CustomResponse<Pet> getAllPets()
     {
-        return userPetsService.getAllPets();
+        return new CustomResponse<>(userPetsService.getAllPets(), CustomStatus.OK);
     }
 
     @GetMapping("/get-one")
@@ -56,7 +62,7 @@ public class UserPetsController
     {
         var pet = userPetsService.getPet(petId.getField());
 
-        if(pet.isPresent()) return pet;
-        else return Error.getError(Error.NO_SUCH_PET);
+        if(pet.isPresent()) return new CustomResponse<>(Collections.singleton(pet), CustomStatus.OK);
+        else return new CustomResponse<>(null, CustomStatus.BAD_REQUEST, Message.NO_SUCH_PET);
     }
 }

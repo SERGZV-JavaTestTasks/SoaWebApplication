@@ -5,13 +5,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.app.web.soa.entities.User;
-import ru.app.web.soa.entities.auxillary.UserSession;
-import ru.app.web.soa.entities.auxillary.ValidationResult;
-import ru.app.web.soa.enums.Error;
+import ru.app.web.soa.util.CustomResponse;
+import ru.app.web.soa.util.UserSession;
+
+import ru.app.web.soa.util.enums.CustomStatus;
+import ru.app.web.soa.util.enums.Message;
 
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.List;
+
+import static ru.app.web.soa.util.enums.CustomStatus.CONFLICT;
 
 @Service
 public class UserValidationService
@@ -29,32 +31,25 @@ public class UserValidationService
         this.userService = userService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
-
-    public List<String> validateNewUser(User newUser)
+    
+    public CustomResponse<String> validateNewUser(User newUser)
     {
-        var errors = new ArrayList<String>();
-
-        if(userService.isUserExist(newUser.getUsername())) errors.add(Error.getError(Error.USER_ALREADY_EXIST));
+        if(userService.isUserExist(newUser.getUsername()))
+            return new CustomResponse<>(null, CustomStatus.CONFLICT, Message.USER_ALREADY_EXIST);
 
         var valUsernameResult = validateUsername(newUser.getUsername());
-        if(!valUsernameResult.getPassed()) errors.add(valUsernameResult.getError());
+        if (!valUsernameResult.getMessage().equals(CustomStatus.OK.name())) return valUsernameResult;
 
         var valPasswordResult = validatePassword(newUser.getPassword());
-        if(!valPasswordResult.getPassed()) errors.add(valPasswordResult.getError());
+        if (!valPasswordResult.getMessage().equals(CustomStatus.OK.name())) return valPasswordResult;
 
-        return errors;
+        return new CustomResponse<>(null, CustomStatus.OK);
     }
 
-    public ValidationResult loginIsPossible(User enteringUser, HttpSession session)
+    public CustomResponse<String> loginIsPossible(User enteringUser, HttpSession session)
     {
-        ValidationResult validationResult = new ValidationResult();
-
         var attemptsExceeded = UserSession.numLoginAttemptsExceeded(session);
-        if(attemptsExceeded)
-        {
-            validationResult.setError(Error.getError(Error.EXCEEDED_LOGIN_ATTEMPTS));
-            return validationResult;
-        }
+        if(attemptsExceeded) return new CustomResponse<>(null, CONFLICT, Message.EXCEEDED_LOGIN_ATTEMPTS);
 
         User user;
         try
@@ -63,18 +58,15 @@ public class UserValidationService
         }
         catch (UsernameNotFoundException ex)
         {
-            validationResult.setError(Error.getError(Error.USER_DONT_EXIST));
-            return validationResult;
+            return new CustomResponse<>(null, CONFLICT, Message.USER_DONT_EXIST);
         }
 
         if(!passIsCorrect(enteringUser, user))
         {
-            validationResult.setError(Error.getError(Error.INVALID_PASSWORD));
-            return validationResult;
+            return new CustomResponse<>(null, CONFLICT, Message.INVALID_PASSWORD);
         }
 
-        validationResult.setPassed(true);
-        return validationResult;
+        return new CustomResponse<>(null, CustomStatus.OK);
     }
 
     private boolean passIsCorrect(User checkedUser, User originUser)
@@ -82,31 +74,23 @@ public class UserValidationService
         return bCryptPasswordEncoder.matches(checkedUser.getPassword(), originUser.getPassword());
     }
 
-    private ValidationResult validateUsername(String username)
+    private CustomResponse<String> validateUsername(String username)
     {
-        ValidationResult validationResult = new ValidationResult();
-
         if(username.length() < 4 || username.length() > 40)
         {
-            validationResult.setPassed(false);
-            validationResult.setError(Error.getError(Error.INVALID_USERNAME_LENGTH));
+            return new CustomResponse<>(null, CustomStatus.BAD_REQUEST, Message.INVALID_USERNAME_LENGTH);
         }
-        else validationResult.setPassed(true);
 
-        return validationResult;
+        return new CustomResponse<>(null, CustomStatus.OK);
     }
 
-    private ValidationResult validatePassword(String password)
+    private CustomResponse<String> validatePassword(String password)
     {
-        ValidationResult validationResult = new ValidationResult();
-
         if(password.length() < 6)
         {
-            validationResult.setPassed(false);
-            validationResult.setError(Error.getError(Error.INVALID_PASSWORD_LENGTH));
-        }
-        else validationResult.setPassed(true);
+            return new CustomResponse<>(null, CustomStatus.BAD_REQUEST, Message.INVALID_PASSWORD_LENGTH);
 
-        return validationResult;
+        }
+        return new CustomResponse<>(null, CustomStatus.OK);
     }
 }

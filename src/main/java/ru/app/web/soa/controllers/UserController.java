@@ -1,23 +1,23 @@
 package ru.app.web.soa.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.web.bind.annotation.*;
-import ru.app.web.soa.entities.auxillary.RegistrationResults;
+import ru.app.web.soa.util.RegistrationResults;
 import ru.app.web.soa.simpletypecontainers.StringContainer;
 import ru.app.web.soa.entities.User;
-import ru.app.web.soa.entities.auxillary.UserSession;
-import ru.app.web.soa.enums.Error;
+import ru.app.web.soa.util.UserSession;
+import ru.app.web.soa.util.CustomResponse;
 import ru.app.web.soa.services.UserService;
 import ru.app.web.soa.services.UserValidationService;
+import ru.app.web.soa.util.enums.CustomStatus;
+import ru.app.web.soa.util.enums.Message;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/user")
@@ -25,88 +25,52 @@ public class UserController
 {
     private final UserService userService;
     private final UserValidationService validationService;
-    private final AuthenticationManager authenticationManager;
 
     @Autowired
-    public UserController
-    (
-        UserService userService,
-        UserValidationService validationService,
-        AuthenticationManager authenticationManager
-    )
+    public UserController(UserService userService, UserValidationService validationService)
     {
         this.userService = userService;
         this.validationService = validationService;
-        this.authenticationManager = authenticationManager;
-    }
-
-    @GetMapping("/test_autorize")
-    @PreAuthorize("hasRole('ROLE_USER')")
-    public String roleRestrictionTest()
-    {
-        return "true";
     }
 
     @GetMapping("/login")
-    public String loginController(@RequestBody User user, HttpServletRequest request)
+    public CustomResponse<String> loginController(@RequestBody User user, HttpServletRequest request)
     {
-        var responseString = "";
         var validationResult = validationService.loginIsPossible(user, request.getSession());
 
-        if(validationResult.getPassed())
+        if (validationResult.getMessage().equals(CustomStatus.OK.getMessage()))
         {
-            authenticateUserAndSetSession(user.getUsername(), user.getPassword(), request);
+            userService.authenticateUserAndSetSession(user.getUsername(), user.getPassword(), request);
             UserSession.resetFailedLoginAttempts(request.getSession());
-            responseString = "Вы успешно вошли";
+            validationResult.setMessageClarification(Message.SUCCESSFUL_LOGIN);
         }
         else
         {
             UserSession.addFailedLoginAttempt(request.getSession());
-            responseString = validationResult.getError();
         }
 
-        return responseString;
+        return validationResult;
     }
 
     @GetMapping("/exist")
-    public String suchUserExist(@RequestBody StringContainer username)
+    public CustomResponse<String> suchUserExist(@RequestBody StringContainer username)
     {
-        String message;
-
-        boolean exist = userService.isUserExist(username.getField());
-        if(!exist) message = Error.getError(Error.USER_DONT_EXIST);
-        else message = "Имя пользователя свободно";
-
-        return message;
+        return userService.suchUserExist(username.getField());
     }
 
     @PostMapping("/create")
-    public RegistrationResults createUser(@RequestBody User user, HttpServletRequest request)
+    public CustomResponse<String> createUser(@RequestBody User user, HttpServletRequest request)
     {
-        var registrationResults = new RegistrationResults();
-        registrationResults.addErrors(validationService.validateNewUser(user));
+        var validationResponse = validationService.validateNewUser(user);
 
-        var unencryptedPassword = user.getPassword();
-        if(registrationResults.getErrors().size() == 0)
+        if (validationResponse.getMessage().equals(CustomStatus.OK.name()))
         {
-            userService.createNewUser(user);
-            registrationResults.setSuccessful(true);
-            authenticateUserAndSetSession(user.getUsername(), unencryptedPassword, request);
+            var unencryptedPassword = user.getPassword();
+            userService.createNewUser(user, unencryptedPassword, request);
+
+            validationResponse.setMessageClarification("The user has been successfully created");
         }
 
-        return registrationResults;
-    }
-
-    private void authenticateUserAndSetSession(String username, String unencryptedPass, HttpServletRequest request)
-    {
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, unencryptedPass);
-
-        HttpSession session = request.getSession();
-        session.setAttribute("username", username);
-
-        token.setDetails(new WebAuthenticationDetails(request));
-        Authentication authenticatedUser = authenticationManager.authenticate(token);
-
-        SecurityContextHolder.getContext().setAuthentication(authenticatedUser);
+        return validationResponse;
     }
 }

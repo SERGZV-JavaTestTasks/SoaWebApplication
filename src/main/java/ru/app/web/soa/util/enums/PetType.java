@@ -1,4 +1,4 @@
-package ru.app.web.soa.enums;
+package ru.app.web.soa.util.enums;
 
 public enum PetType
 {

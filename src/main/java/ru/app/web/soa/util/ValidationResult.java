@@ -1,4 +1,4 @@
-package ru.app.web.soa.entities.auxillary;
+package ru.app.web.soa.util;
 
 public class ValidationResult
 {
